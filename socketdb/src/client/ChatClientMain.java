@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
+import member.Member;
+
 interface Menu {
 	void displayMenu();
 	
@@ -82,22 +84,24 @@ public class ChatClientMain {
 	}
 
 	static boolean stop = false;
-	static boolean isMember = false;
+	static boolean isMember = true;
 	static boolean isEnter = false;
 //	static MenuMode menuLayer = MenuMode.USER_MANAGEMENT;
 	static Properties prop = new Properties();
 	static Scanner scanner = new Scanner(System.in);
 	static Map<String, Method> actionUserManagement = new HashMap<>(); 
-	
-	static ClientControlMember memberClient = new ClientControlMember(scanner, () -> {
+	static Member member = new Member();
+	static ClientControlMember memberClient = new ClientControlMember(scanner, member,() -> {
 		menu = MenuFactory.get(Menu.MenuMode.CHATTING_MANAGEMENT);
 	}, () -> {
 		scanner.close();
 		stop = true;
 		System.out.println("프로그램 종료됨");
 	});
-	static ClientControlChat chattingClient = new ClientControlChat();
-	static ClientControlFile fileClient = new ClientControlFile();
+	static ClientControlChat chattingClient = new ClientControlChat(member);
+	static ClientControlFile fileClient = new ClientControlFile(member);
+	
+	
 	
 	public static void main(String[] args) throws Exception {
 		
@@ -204,34 +208,7 @@ public class ChatClientMain {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			switch(menuNum) {
-//			case "1":
-//				if (login()) { 
-//					return;
-//				}
-//				break;
-//
-//			case "2":
-//				memberClient.registerMember(); //회원가입
-//				break;
-//			case "3":
-//				memberClient.passwdSearch(); //비밀번호찾기
-//				break;
-//			case "4":
-//				memberClient.updateMember(); //회원정보수정
-//				break;
-//			case "5":
-//				memberClient.memberDelete(); //회원탈퇴
-//				break;
-//			case "6":
-//				memberClient.memberInfo(); //전체회원목록
-//				break;
-//			case "Q", "q":
-//				scanner.close();
-//				stop = true;
-//				System.out.println("프로그램 종료됨");
-//				return;
-//			}
+
 		}
 	} 
 

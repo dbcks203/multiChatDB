@@ -6,8 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
 import org.json.JSONObject;
+import member.Member;
 
 public class SocketClient {
 	// 필드
@@ -20,7 +20,8 @@ public class SocketClient {
 	Room room;
 	RoomManager roomManager;
 	static String chatTitle;
-
+	String clientUid;
+	Member member;
 	public SocketClient() {
 	}
 
@@ -81,16 +82,24 @@ public class SocketClient {
 
 	public void sendWithOutMe(String message) {
 		JSONObject root = new JSONObject();
-		root.put("chatName", this.chatName);
-		for (SocketClient c : this.room.clients) {
+		root.put("chatName", member.getName());
+		for (SocketClient c : roomManager.loadRoom(this.clientUid).clients) {
+	
 			if (!c.equals(this)) {
+				
 				root.put("message", message);
 				String json = root.toString();
+				
+			
 				c.send(json);
 			}
 		}
 	}
-
+	
+	public void loadMember(String uid) {
+		this.member = chatServer.memberRepository.getMember(uid);
+	}
+	
 	public void send(String json) {
 		try {
 			dos.writeUTF(json);

@@ -3,11 +3,13 @@ package client;
 import java.util.Scanner;
 import org.json.JSONObject;
 
+import member.Member;
+
 
 public class ClientControlMember extends ChatClient {
 
 	private Scanner scanner = null;
-
+	Member member;
 	static interface LoginListener {
 		void afterLogin(); 
 	}
@@ -20,9 +22,11 @@ public class ClientControlMember extends ChatClient {
 	ExitListener  exitListener = null;
 
 	public ClientControlMember(Scanner scanner
+			,Member member
 			, LoginListener loginListener
 			, ExitListener exitListener) {
 		this.scanner = scanner;
+		this.member = member;
 		this.loginListener = loginListener;
 		this.exitListener = exitListener;
 	}
@@ -46,11 +50,15 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 
-
+			
 			send(jsonObject.toString());
-
-			result = loginResponse();
-
+			
+			result = loginResponse(uid,pwd);
+			
+			if (result == true && loginListener != null) {
+				loginListener.afterLogin();
+			}
+			
 			disconnect();
 			return result;
 
@@ -61,17 +69,17 @@ public class ClientControlMember extends ChatClient {
 		}
 	}
 
-	public boolean loginResponse() throws Exception {
+	public boolean loginResponse(String uid, String pwd) throws Exception {
 		String json = dis.readUTF();
 		JSONObject root = new JSONObject(json);
 		String statusCode = root.getString("statusCode");
 		String message = root.getString("message");
 
-
 		if (statusCode.equals("0")) {
-			String uid = root.getString("uid");
 			System.out.println("로그인 성공");	
 			System.out.println(uid+"님이 로그인 하셨습니다.");
+			
+			member = member.settingMember(uid,pwd,root.getString("name"));
 			return true;
 		} else {
 			System.out.println(message);
@@ -236,7 +244,7 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("memberCommand", "memberDelete");
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
-
+			jsonObject.put("name", "");
 			String json = jsonObject.toString();
 			send(json);
 

@@ -18,7 +18,7 @@ public class ChatCommand{
 		try {
 			switch (command) {
 			case "chatlist":
-				chatList();
+				chatList(jsonObject);
 				break;
 			case "chatCreate":
 				chatCreate(jsonObject);
@@ -41,8 +41,9 @@ public class ChatCommand{
 		}
 	}
 
-	public void chatList() {
-
+	public void chatList(JSONObject jsonObject) {
+		sc.clientUid = jsonObject.getString("Uid");
+		sc.room = roomManager.loadRoom(sc.clientUid);
 		String roomStatus;
 		roomManager.updateRoom();
 		roomStatus = "[room status]\n";
@@ -54,7 +55,6 @@ public class ChatCommand{
 		}
 
 		JSONObject jsonResult = new JSONObject();
-
 		jsonResult.put("message", roomStatus);
 
 		sc.send(jsonResult.toString());
@@ -64,9 +64,10 @@ public class ChatCommand{
 	}
 
 	public void startChat(JSONObject jsonObject) {
-
-		sc.chatName = jsonObject.getString("chatName");
-		sc.room = roomManager.loadRoom(sc.chatName);
+		
+		sc.clientUid = jsonObject.getString("Uid");
+		sc.loadMember(sc.clientUid);
+		sc.room = roomManager.loadRoom(sc.clientUid);
 		sc.sendWithOutMe("님이 들어오셨습니다.");
 		sc.room.clients.add(sc);
 
@@ -75,7 +76,8 @@ public class ChatCommand{
 
 
 	public void removeRoom(JSONObject jsonObject) {
-
+		sc.clientUid = jsonObject.getString("Uid");
+		sc.room = roomManager.loadRoom(sc.clientUid);
 		int chatNo = Integer.parseInt(jsonObject.getString("chatNo"));
 		JSONObject jsonResult = new JSONObject();
 		Room target = null;
@@ -98,12 +100,13 @@ public class ChatCommand{
 	}
 
 	public void chatCreate(JSONObject jsonObject) {
-
+		sc.clientUid = jsonObject.getString("Uid");
+		sc.room = roomManager.loadRoom(sc.clientUid);
+		
 		String chatRoomName = jsonObject.getString("chatRoomName");
 		JSONObject jsonResult = new JSONObject();
 
 		jsonResult.put("statusCode", "0");
-		System.out.println(sc.room);
 
 		roomManager.createRoom(chatRoomName, sc);
 		System.out.println("[채팅서버] 채팅방 개설 ");
@@ -117,7 +120,9 @@ public class ChatCommand{
 	}
 
 	public void chatEnter(JSONObject jsonObject) {
-
+		sc.clientUid = jsonObject.getString("Uid");
+		sc.room = roomManager.loadRoom(sc.clientUid);
+		
 		int chatNo = Integer.parseInt(jsonObject.getString("chatNo"));
 		sc.chatName = jsonObject.getString("data");
 

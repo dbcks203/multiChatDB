@@ -1,6 +1,4 @@
 package client;
-import member.Member;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,7 +10,6 @@ public class ChatClient {
 	DataInputStream dis;
 	DataOutputStream dos;
 	String chatName;
-	Member member;
 	public ChatClient() {
 	}
 

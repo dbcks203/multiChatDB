@@ -23,7 +23,7 @@ public class Room {
 
 
     public void entryRoom(SocketClient client) {
-		roomManager.roomRecord.put(client.chatName, this);
+		roomManager.roomRecord.put(client.clientUid, this);
     }
 
    
