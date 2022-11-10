@@ -31,7 +31,6 @@ public class ClientControlMember extends ChatClient {
 		this.exitListener = exitListener;
 	}
 
-
 	public boolean login() {
 		try {
 			String uid;
@@ -272,8 +271,6 @@ public class ClientControlMember extends ChatClient {
 	}
 
 	public boolean memberInfo() {
-
-
 		try {
 			System.out.println("[회원목록]");
 			connect();

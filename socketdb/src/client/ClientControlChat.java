@@ -1,38 +1,41 @@
 package client;
-
-
 import java.util.Scanner;
 
 import org.json.JSONObject;
 
-
+import client.ClientControlMember.ExitListener;
+import client.ClientControlMember.LoginListener;
 import member.Member;
 
 public class ClientControlChat extends ChatClient{
 	Member member;
+	private Scanner scanner;
+	
+	static interface EnterRoomListener {
+		void afterEnter(); 
+	}
 
-	public ClientControlChat(Member member) {
+	static interface LogOutListener {
+		void afterLogOut(); 
+	}
+
+	EnterRoomListener enterRoomListener = null;
+	LogOutListener  logOutListener = null;
+	
+	
+	public ClientControlChat(Scanner scanner
+			,Member member
+			, EnterRoomListener enterRoomListener
+			, LogOutListener logOutListener) {
+		this.scanner = scanner;
 		this.member = member;
+		this.enterRoomListener = enterRoomListener;
+		this.logOutListener = logOutListener;
 	}
 	
-	public void receive() {
-		Thread thread = new Thread(() -> {
-			try {
-				while(true) {
-					String json = dis.readUTF();
-					JSONObject root = new JSONObject(json);
-					String chatName = root.getString("chatName");
-					String message = root.getString("message");
-					System.out.println("["+chatName+"] "+message);
-				}
-			} catch(Exception e1) {
-			}
-		});
-		thread.start();
-	}
+
 	
-	
-	public void chatCreate(Scanner scanner) {
+	public void chatCreate() {
 		try {
 			
 			String chatRoomName;
@@ -61,7 +64,7 @@ public class ClientControlChat extends ChatClient{
 
 
 
-	public boolean chatEnter(Scanner scanner) {
+	public boolean chatEnter() {
 		try {
 			String select;
 			boolean isEnter;
@@ -83,9 +86,10 @@ public class ClientControlChat extends ChatClient{
 			
 			isEnter = chatEnterResponse();
 			disconnect();
-
-
-
+			
+			if (isEnter == true && enterRoomListener != null) {
+				enterRoomListener.afterEnter();
+			}
 			return isEnter;
 
 
@@ -132,7 +136,7 @@ public class ClientControlChat extends ChatClient{
 
 	
 	
-	public void removeRoom(Scanner scanner) {
+	public void removeRoom() {
 		try {
 			String select;
 			System.out.println("삭제할 채팅방 번호: ");
@@ -165,46 +169,12 @@ public class ClientControlChat extends ChatClient{
 
 		System.out.println(message);
 	}
-	public void sendMessage(Scanner scanner) {
-		try {
 
-			connect();
-
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("chatCommand", "chatstart");
-			jsonObject.put("Uid",member.getUid());
-			String json = jsonObject.toString();
-			send(json);
-
-			receive();			
-
-			System.out.println("--------------------------------------------------");
-			System.out.println("보낼 메시지를 입력하고 Enter");
-			System.out.println("채팅를 종료하려면 q를 입력하고 Enter");
-			System.out.println("--------------------------------------------------");
-			while(true) {
-				String message = scanner.nextLine();
-				if(message.toLowerCase().equals("q")) {
-					jsonObject.put("chatCommand", "endchat");
-					break;
-				} else {
-					jsonObject = new JSONObject();
-					jsonObject.put("chatCommand", "message");
-					jsonObject.put("data", message);
-					send(jsonObject.toString());
-				}
-			}
-			
-			
-			jsonObject.put("chatCommand", "endchat");
-			json = jsonObject.toString();
-			send(json);
-			
-			disconnect();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
+	public boolean logOut() {
+		if (logOutListener != null) {
+			logOutListener.afterLogOut();
+		}
+		return true;
+	}
 }

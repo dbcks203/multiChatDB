@@ -2,11 +2,14 @@ package server;
 
 import org.json.JSONObject;
 
+import member.ChattingRepositoryDB;
+
 public class ChatCommand{
 	
 	ChatServer chatServer;
 	RoomManager roomManager;
 	SocketClient sc;
+	ChattingRepositoryDB chattingRepositoryDB = new ChattingRepositoryDB();
 	
 	public ChatCommand(SocketClient sc, JSONObject jsonObject) {
 		this.chatServer = sc.chatServer;
@@ -108,7 +111,7 @@ public class ChatCommand{
 
 		jsonResult.put("statusCode", "0");
 
-		roomManager.createRoom(chatRoomName, sc);
+		roomManager.createRoom(chatRoomName);
 		System.out.println("[채팅서버] 채팅방 개설 ");
 		System.out.println("[채팅서버] 현재 채팅방 갯수 " + roomManager.rooms.size());
 
