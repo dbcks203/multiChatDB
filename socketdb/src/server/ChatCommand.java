@@ -138,8 +138,8 @@ public class ChatCommand{
 			if (room.no == chatNo) {
 				jsonResult.put("statusCode", "0");
 				jsonResult.put("message", chatNo + "번 방에 입장했습니다.");
-				sc.room = room;
 				room.entryRoom(sc);
+				sc.room = room;
 				sc.chatTitle = room.title;
 				break;
 			}

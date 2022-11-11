@@ -33,8 +33,6 @@ public class ClientControlChat extends ChatClient{
 		this.logOutListener = logOutListener;
 	}
 	
-
-	
 	public void chatCreate() {
 		try {
 			
@@ -62,9 +60,7 @@ public class ClientControlChat extends ChatClient{
 		}
 	}
 
-
-
-	public boolean chatEnter() {
+	public void chatEnter() {
 		try {
 			String select;
 			boolean isEnter;
@@ -83,35 +79,24 @@ public class ClientControlChat extends ChatClient{
 			String json = jsonObject.toString();
 			
 			send(json);
-			
-			isEnter = chatEnterResponse();
+			chatEnterResponse();
 			disconnect();
 			
-			if (isEnter == true && enterRoomListener != null) {
+			if (enterRoomListener != null) {
 				enterRoomListener.afterEnter();
 			}
-			return isEnter;
-
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
-	public boolean chatEnterResponse() throws Exception {
+	public void chatEnterResponse() throws Exception {
 		String json = dis.readUTF();
 		JSONObject root = new JSONObject(json);
 
 		String statusCode = root.getString("statusCode");
 		String message = root.getString("message");
 		System.out.println(message);
-
-		if (statusCode.equals("0")) 
-			return true;
-
-		else 
-			return false;
-
 	}
 	
 
@@ -171,10 +156,9 @@ public class ClientControlChat extends ChatClient{
 	}
 
 	
-	public boolean logOut() {
+	public void logOut() {
 		if (logOutListener != null) {
 			logOutListener.afterLogOut();
 		}
-		return true;
 	}
 }

@@ -28,6 +28,7 @@ public class Room {
         dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         this.CreateDate= dateFormat.format(CreateDate);
         clients = new Vector<>();
+        cluid = new Vector<>();
         
     }
     public Room(
@@ -39,6 +40,7 @@ public class Room {
         this.title = title;
         
         clients = new Vector<>();
+        cluid = new Vector<>();
         dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date now = new Date();
         this.CreateDate= dateFormat.format(now);

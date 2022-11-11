@@ -31,11 +31,10 @@ public class ClientControlMember extends ChatClient {
 		this.exitListener = exitListener;
 	}
 
-	public boolean login() {
+	public void login() {
 		try {
 			String uid;
 			String pwd;
-			boolean result = false;
 			System.out.println("\n1. 로그인 작업");
 			System.out.print("아이디 : ");
 			uid = scanner.nextLine();
@@ -49,26 +48,23 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 
-			
+
 			send(jsonObject.toString());
-			
-			result = loginResponse(uid,pwd);
-			
-			if (result == true && loginListener != null) {
+
+			loginResponse(uid,pwd);
+
+			if (loginListener != null) {
 				loginListener.afterLogin();
 			}
-			
-			disconnect();
-			return result;
 
+			disconnect();
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
 
-	public boolean loginResponse(String uid, String pwd) throws Exception {
+	public void loginResponse(String uid, String pwd) throws Exception {
 		String json = dis.readUTF();
 		JSONObject root = new JSONObject(json);
 		String statusCode = root.getString("statusCode");
@@ -77,17 +73,15 @@ public class ClientControlMember extends ChatClient {
 		if (statusCode.equals("0")) {
 			System.out.println("로그인 성공");	
 			System.out.println(uid+"님이 로그인 하셨습니다.");
-			
+
 			member = member.settingMember(uid,pwd,root.getString("name"));
-			return true;
 		} else {
 			System.out.println(message);
-			return false;
 		}
 	}
 
 	// 회원가입
-	public boolean registerMember() {
+	public void registerMember() {
 		String uid;
 		String pwd;
 		String name;
@@ -119,7 +113,6 @@ public class ClientControlMember extends ChatClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 
 
@@ -138,7 +131,7 @@ public class ClientControlMember extends ChatClient {
 
 
 
-	public boolean passwdSearch() {
+	public void passwdSearch() {
 		try {
 			String uid;
 
@@ -161,7 +154,6 @@ public class ClientControlMember extends ChatClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 
 	public void passwdSearchResponse() throws Exception {
@@ -178,7 +170,7 @@ public class ClientControlMember extends ChatClient {
 		}
 	}
 
-	public boolean updateMember() {
+	public void updateMember() {
 		String uid;
 		String pwd;
 		String name;
@@ -209,7 +201,6 @@ public class ClientControlMember extends ChatClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 
 	public void updateMemberResponse() throws Exception {
@@ -225,7 +216,7 @@ public class ClientControlMember extends ChatClient {
 		}
 	}
 
-	public boolean memberDelete() {
+	public void memberDelete() {
 		String uid;
 		String pwd;
 
@@ -235,7 +226,6 @@ public class ClientControlMember extends ChatClient {
 			uid = scanner.nextLine();
 			System.out.print("비번 : ");
 			pwd = scanner.nextLine();
-
 
 			connect();
 
@@ -254,7 +244,6 @@ public class ClientControlMember extends ChatClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 
 	public void memberDeleteResponse() throws Exception {
@@ -270,7 +259,7 @@ public class ClientControlMember extends ChatClient {
 		}
 	}
 
-	public boolean memberInfo() {
+	public void memberInfo() {
 		try {
 			System.out.println("[회원목록]");
 			connect();
@@ -287,8 +276,6 @@ public class ClientControlMember extends ChatClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
-
 	}
 
 	public void memberInfoResonse() throws Exception {
@@ -310,6 +297,4 @@ public class ClientControlMember extends ChatClient {
 		}
 		return true;
 	}
-
-
 }

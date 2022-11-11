@@ -92,19 +92,23 @@ public class ChatClientMain {
 	static Properties prop = new Properties();
 	static Scanner scanner = new Scanner(System.in);
 	static Member member = new Member();
-
+	static Menu.MenuMode mode = Menu.MenuMode.USER_MANAGEMENT;
+	
 	static ClientControlMember memberClient = new ClientControlMember(scanner, member,
-			() -> {menu = MenuFactory.get(Menu.MenuMode.CHAT_ROOM_MANAGEMENT);}, 
+			() -> {modeSetter(Menu.MenuMode.CHAT_ROOM_MANAGEMENT);}, 
 			() -> {scanner.close();System.out.println("프로그램 종료됨");
 			});
 
 	static ClientControlChat chatClient = new ClientControlChat(scanner, member,
-			() -> {menu = MenuFactory.get(Menu.MenuMode.FILE_CHAT_MANAGEMENT);}, 
-			() -> {scanner.close();menu = MenuFactory.get(Menu.MenuMode.USER_MANAGEMENT);
+			() -> {mode = Menu.MenuMode.FILE_CHAT_MANAGEMENT;
+			menu = MenuFactory.get(mode);}, 
+			() -> {mode = Menu.MenuMode.USER_MANAGEMENT;
+			menu = MenuFactory.get(mode);
 			});
 
 	static ClientControlFile fileClient = new ClientControlFile(scanner,member, 
-			() -> {menu = MenuFactory.get(Menu.MenuMode.CHAT_ROOM_MANAGEMENT);
+			() -> {mode = Menu.MenuMode.CHAT_ROOM_MANAGEMENT;
+			menu = MenuFactory.get(mode);
 			});
 
 	public static void main(String[] args) throws Exception {
@@ -122,8 +126,7 @@ public class ChatClientMain {
 				Method method = cls.getMethod(methodInfo[1]);
 
 				actionUserManagement.put(mode.ordinal()+methodInfo[0], method);
-				System.out.println(mode.ordinal()+methodInfo[0]);
-				System.out.println(actionUserManagement.get(mode.ordinal()+methodInfo[0]));
+				System.out.println(method);
 			}
 		}
 		clientManagement();
@@ -133,7 +136,10 @@ public class ChatClientMain {
 	public static void clientUi() {
 		menu.displayMenu();
 	}
-
+	public static void modeSetter(Menu.MenuMode mMode) {
+		mode = mMode;
+		menu = MenuFactory.get(mode);
+	}
 	private static Class clsSetter(Menu.MenuMode menu) {
 
 		Class cls = null;
@@ -155,7 +161,7 @@ public class ChatClientMain {
 
 	private static void clientManagement() {
 		Object ret=null;
-		Menu.MenuMode mode = Menu.MenuMode.USER_MANAGEMENT;
+		
 		menu = MenuFactory.get(mode);
 		while(true) {
 			clientUi();
@@ -166,13 +172,12 @@ public class ChatClientMain {
 					ret = actionUserManagement.get(mode.ordinal()+menuNum).invoke(memberClient);
 					break;
 				case CHAT_ROOM_MANAGEMENT:
-					ret = actionUserManagement.get(mode.ordinal()+menuNum).invoke(chatClient);
+					actionUserManagement.get(mode.ordinal()+menuNum).invoke(chatClient);
 					break;
 				case FILE_CHAT_MANAGEMENT:
-					ret = actionUserManagement.get(mode.ordinal()+menuNum).invoke(fileClient);
+					actionUserManagement.get(mode.ordinal()+menuNum).invoke(fileClient);
 					break;	
 				}
-				System.out.println(mode.ordinal()+menuNum);
 				if (ret instanceof Boolean) {
 					if (((Boolean)ret).booleanValue()) {
 						return;

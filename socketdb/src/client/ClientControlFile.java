@@ -208,10 +208,9 @@ public class ClientControlFile extends ChatClient {
 	}
 
 
-	public boolean exitRoom() {
+	public void exitRoom() {
 		if (exitListener != null) {
 			exitListener.afterExit();
 		}
-		return true;
 	}
 }
