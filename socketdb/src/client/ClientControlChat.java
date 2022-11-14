@@ -3,13 +3,12 @@ import java.util.Scanner;
 
 import org.json.JSONObject;
 
-import client.ClientControlMember.ExitListener;
-import client.ClientControlMember.LoginListener;
 import member.Member;
 
 public class ClientControlChat extends ChatClient{
 	Member member;
 	private Scanner scanner;
+	int roomNumber;
 	
 	static interface EnterRoomListener {
 		void afterEnter(); 
@@ -63,7 +62,6 @@ public class ClientControlChat extends ChatClient{
 	public void chatEnter() {
 		try {
 			String select;
-			boolean isEnter;
 			System.out.println("입장할 채팅방 번호: ");
 			select = scanner.nextLine();
 			System.out.println("채팅방 닉네임: ");
@@ -75,9 +73,10 @@ public class ClientControlChat extends ChatClient{
 			jsonObject.put("chatCommand", "chatEnter");
 			jsonObject.put("Uid",member.getUid());
 			jsonObject.put("chatNo", select);
-			jsonObject.put("data", chatName);
+			jsonObject.put("chatname", chatName);
 			String json = jsonObject.toString();
 			
+			this.roomNumber=Integer.parseInt(select);
 			send(json);
 			chatEnterResponse();
 			disconnect();
@@ -105,7 +104,7 @@ public class ClientControlChat extends ChatClient{
 			connect();
 
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("chatCommand", "chatlist");
+			jsonObject.put("chatCommand", "chatList");
 			jsonObject.put("Uid",member.getUid());
 			String json = jsonObject.toString();
 			send(json);
@@ -131,7 +130,7 @@ public class ClientControlChat extends ChatClient{
 			connect();
 
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("chatCommand", "chatrm");
+			jsonObject.put("chatCommand", "removeRoom");
 			jsonObject.put("Uid",member.getUid());
 			jsonObject.put("chatNo", select);
 

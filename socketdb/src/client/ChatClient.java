@@ -14,7 +14,7 @@ public class ChatClient implements ControlManager{
 	Socket socket;
 	DataInputStream dis;
 	DataOutputStream dos;
-	String chatName;
+	public static String chatName;
 	
 	public ChatClient() {
 	}

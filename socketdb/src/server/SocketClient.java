@@ -15,12 +15,14 @@ public class SocketClient {
 	Socket socket;
 	DataInputStream dis;
 	DataOutputStream dos;
+	
 	String clientIp;
 	String chatName;
+	String clientUid;
 	Room room;
 	RoomManager roomManager;
 	static String chatTitle;
-	String clientUid;
+	
 	Member member;
 	public SocketClient() {
 	}
@@ -50,28 +52,8 @@ public class SocketClient {
 				while (true != stop) {
 					String receiveJson = dis.readUTF();
 					JSONObject jsonObject = new JSONObject(receiveJson);
-		
 					
-					if(jsonObject.has("memberCommand")) {
-						new MemberCommand(this, jsonObject);
-						stop = true;
-					}
-					else if(jsonObject.has("chatCommand")) {
-						String chatCommand = jsonObject.getString("chatCommand");
-						if(chatCommand.equals("message")) {
-							String message = jsonObject.getString("data");
-							chatServer.sendMessage(this, message);
-						}
-						else{
-						new ChatCommand(this, jsonObject);
-						if(!chatCommand.equals("chatstart"))
-							stop = true;
-						}
-					}
-					else if(jsonObject.has("fileCommand")) {
-						new FileCommand(this, jsonObject);
-						stop = true;
-					}
+					stop = chatServer.commandManager.setActiveCommand(this, jsonObject);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

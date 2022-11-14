@@ -64,7 +64,7 @@ public class MemberRepositoryFile implements MemberRepository{
 	}
 
 	// 중복회원 검사 메소드
-	private boolean memberCheck(Member m) {
+	public boolean memberCheck(Member m) {
 		boolean result = true;
 
 		// 기존회원의 정보와 전달받은 member객체 비교

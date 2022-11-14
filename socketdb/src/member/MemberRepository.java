@@ -12,7 +12,7 @@ public interface MemberRepository {
 	void loadMember() throws Exception;
 	void memberDelete(Member member) throws Exception;
 	void memberInfo();
-	
+	public boolean memberCheck(Member m);
 	List<Member> getList();
 	
 }

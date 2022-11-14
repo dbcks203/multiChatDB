@@ -6,43 +6,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Base64;
-import java.util.Scanner;
-
+import java.util.List;
 import org.json.JSONObject;
+import chat.ChatLogRepositoryDB;
+import chat.chatLog;
 
-public class FileCommand{
+public class FileCommand implements CommandControl{
 	
-	ChatServer chatServer;
-	RoomManager roomManager;
-	SocketClient sc;
-	
-	public FileCommand(SocketClient sc, JSONObject jsonObject) {
-		this.chatServer = sc.chatServer;
-		this.roomManager = sc.roomManager;
-		this.sc = sc;
-		String command = jsonObject.getString("fileCommand");
-		try {
-			switch (command) {
-
-			case "chatlog":
-				printChatLog(jsonObject);
-				break;
-			case "fileTran":
-				fileTran(jsonObject);
-				break;
-			case "fileList":
-				fileListOutput(jsonObject);
-				break;
-			case "fileRe":
-				fileReceive(jsonObject);
-				break;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void fileTran(JSONObject jsonObject) throws Exception {
+	public boolean fileTran(SocketClient sc, JSONObject jsonObject) throws Exception {
 		JSONObject json = new JSONObject();
 		String fileName = jsonObject.getString("filename");
 		byte[] data = Base64.getDecoder().decode(jsonObject.getString("filetrans").getBytes());
@@ -56,10 +27,12 @@ public class FileCommand{
 		fos.close();
 		sc.send(json.toString());
 		sc.close();
+		
+		return true;
 	}
 
 	// 파일 받기
-	public void fileReceive(JSONObject jsonObject) throws Exception {
+	public boolean fileReceive(SocketClient sc, JSONObject jsonObject) throws Exception {
 		JSONObject json = new JSONObject();
 		String fileName = jsonObject.getString("filename");
 	
@@ -76,29 +49,58 @@ public class FileCommand{
 			sc.send(json.toString());
 		}
 		sc.close();
+		return true;
 	}
 
-	// 채팅 로그 출력
-	public void printChatLog(JSONObject jsonObject) throws Exception {
-		JSONObject json = new JSONObject();
-		String chatRoom = sc.chatTitle;
-		json.put("chatTitle", chatRoom);
-		System.out.println(chatRoom + " 채팅 기록");
+	// 채팅 로그 출력-파일
+		public boolean printChatLog(SocketClient sc, JSONObject jsonObject) throws Exception {
+			JSONObject json = new JSONObject();
+			String chatRoom = sc.chatTitle;
+			json.put("chatTitle", chatRoom);
+			System.out.println(chatRoom + " 채팅 기록");
+			/*
+			FileInputStream file = new FileInputStream("C:/Temp/" + chatRoom + ".db");
+			Scanner scan = new Scanner(file);
 
-		FileInputStream file = new FileInputStream("C:/Temp/" + chatRoom + ".db");
-		Scanner scan = new Scanner(file);
-
-		String chatms = "";
-		while (scan.hasNextLine()) {
-			chatms += scan.nextLine() + "\n";
+			String chatms = "";
+			while (scan.hasNextLine()) {
+				chatms += scan.nextLine() + "\n";
+			}
+			json.put("chatLogReceive", chatms);
+			sc.send(json.toString());
+			scan.close();
+			*/
+			return true;
+			
 		}
-		json.put("chatLogReceive", chatms);
-		sc.send(json.toString());
-		scan.close();
-	}
+		// 채팅 로그 출력-DB
+		public boolean printChatLogDB(SocketClient sc, JSONObject jsonObject) throws Exception {
+			ChatLogRepositoryDB chatLogRepositoryDB = new ChatLogRepositoryDB();
+			JSONObject json = new JSONObject();
+			String clientUid = jsonObject.getString("Uid");
+			
+			String chatRoom = sc.chatTitle;
+			int chatNo = sc.roomManager.loadRoom(clientUid).no;
+			//sc.chatName = jsonObject.getString("chatname");
+
+			System.out.println(chatRoom + " 채팅 기록");
+			System.out.println(chatNo);
+			chatLogRepositoryDB.chatOutput(chatNo);
+			
+			String roomStatus = "[chatLog]\n";
+			
+			List<chatLog> chatList=chatLogRepositoryDB.getList();
+			for (chatLog chat : chatList) {
+				roomStatus += String.format("[WriteTime : %s, ChatName : %s, Content : %s]\n", chat.writetime, chat.chatname,chat.content);
+			}
+			json.put("chatLogReceive", roomStatus);
+			sc.send(json.toString());
+			
+			return true;
+		}
 
 	// 파일 리스트 출력
-	public void fileListOutput(JSONObject jsonObject) throws Exception {
+	public boolean fileListOutput(SocketClient sc, JSONObject jsonObject) throws Exception {
 		JSONObject json = new JSONObject();
 		File file = new File("C:/Temp");
 		String[] fileNames = file.list();
@@ -110,6 +112,8 @@ public class FileCommand{
 
 		json.put("fileListOutputReceive", fileLi);
 		sc.send(json.toString());
+		
+		return true;
 	}
 
 }

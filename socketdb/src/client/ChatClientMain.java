@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
+
 import member.Member;
 
 interface Menu {
@@ -124,9 +125,7 @@ public class ChatClientMain {
 				String methodName = prop.getProperty(methodKey);
 				String [] methodInfo = methodName.split(",");
 				Method method = cls.getMethod(methodInfo[1]);
-
 				actionUserManagement.put(mode.ordinal()+methodInfo[0], method);
-				System.out.println(method);
 			}
 		}
 		clientManagement();

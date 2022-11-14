@@ -1,60 +1,35 @@
 package server;
 
+import java.net.Socket;
 import java.util.List;
-
 import org.json.JSONObject;
 import member.Member;
-public class MemberCommand{
+
+public class MemberCommand implements CommandControl{
 	
-	ChatServer chatServer;
-	SocketClient sc;
-	
-	public MemberCommand(SocketClient sc, JSONObject jsonObject) {
-		this.chatServer = sc.chatServer;
-		this.sc = sc;
-		String command = jsonObject.getString("memberCommand");
-		switch (command) {
-		case "login":
-			login(jsonObject);
-			break;
-		case "registerMember":
-			registerMember(jsonObject);
-			break;
-		case "passwdSearch":
-			passwdSearch(jsonObject);
-			break;
-		case "updateMember":
-			updateMember(jsonObject);
-			break;
-		case "memberDelete":
-			memberDelete(jsonObject);
-			break;
-		case "memberInfo":
-			memberInfo();
-			break;
-		}
+	public MemberCommand(){
 		
 	}
-	
-	private void memberInfo() {
-		JSONObject jsonResult = new JSONObject();
 
+	public boolean memberInfo(SocketClient sc, JSONObject jsonObject) {
+		JSONObject jsonResult = new JSONObject();
+		System.out.println("hi");
 		jsonResult.put("statusCode", "-1");
 		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
 		try {
-			
-			String memberData="[INFO]\n";
-			
-			List<Member> memberList = chatServer.memberRepository.getList();
+
+			String memberData = "[INFO]\n";
+
+			List<Member> memberList = sc.chatServer.memberRepository.getList();
 			for (Member member : memberList) {
-				memberData += String.format("[id : %s, pwd : %s, name : %s]\n", member.uid, member.pwd,member.name);
+				memberData += String.format("[id : %s, pwd : %s, name : %s, sex : %s, address : %s, phone : %s]\n",
+						member.uid, member.pwd, member.name, member.sex, member.address, member.phone);
 			}
-			
+
 			jsonResult.put("statusCode", "0");
 			jsonResult.put("message", memberData);
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -62,10 +37,10 @@ public class MemberCommand{
 		sc.send(jsonResult.toString());
 
 		sc.close();
-
+		return true;
 	}
 
-	private void memberDelete(JSONObject jsonObject) {
+	public boolean memberDelete(SocketClient sc, JSONObject jsonObject) {
 		Member member = new Member(jsonObject);
 
 		JSONObject jsonResult = new JSONObject();
@@ -73,9 +48,9 @@ public class MemberCommand{
 		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
 		try {
-			chatServer.memberRepository.memberDelete(member);
+			sc.chatServer.memberRepository.memberDelete(member);
 			jsonResult.put("statusCode", "0");
-			jsonResult.put("message",member.getUid()+"  탈퇴했습니다.");
+			jsonResult.put("message", member.getUid() + "  탈퇴했습니다.");
 
 			sc.send(jsonResult.toString());
 
@@ -84,33 +59,40 @@ public class MemberCommand{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		return true;
 	}
 
-	private void registerMember(JSONObject jsonObject) {
-		Member member = new Member(jsonObject);
+	   public void registerMember(SocketClient sc,JSONObject jsonObject) {
+		      Member member = new Member(jsonObject);
 
-		JSONObject jsonResult = new JSONObject();
+		      JSONObject jsonResult = new JSONObject();
+		      jsonResult.put("statusCode", "-1");
+		      jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
-		jsonResult.put("statusCode", "-1");
-		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
+		      try {
+		            boolean result = sc.chatServer.memberRepository.memberCheck(member);
+		            if(result==true) {
+		            	sc.chatServer.registerMember(member);
+		               jsonResult.put("statusCode", "0");
+		               jsonResult.put("message", member.getUid() +"님 환영합니다.");   
+		            }else {
+		                
+		            	sc.chatServer.registerMember(member);
+		               jsonResult.put("statusCode", "-1");
+		               jsonResult.put("message", "중복된 아이디입니다. ");
+		            }      
 
-		try {
+		      } catch (Exception e) {
+		         e.printStackTrace();
+		      }
 
-			chatServer.registerMember(member);
-			jsonResult.put("statusCode", "0");
-			jsonResult.put("message", "회원가입이 완료되었습니다.");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		      sc.send(jsonResult.toString());
 
-		sc.send(jsonResult.toString());
+		      sc.close();
 
-		sc.close();
+		   }
 
-	}
-
-	private void updateMember(JSONObject jsonObject) {
+	public boolean updateMember(SocketClient sc, JSONObject jsonObject) {
 		Member member = new Member(jsonObject);
 		System.out.println(jsonObject);
 		JSONObject jsonResult = new JSONObject();
@@ -119,7 +101,8 @@ public class MemberCommand{
 		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
 		try {
-			chatServer.memberRepository.updateMember(member);
+			sc.chatServer.memberRepository.findByUid(member.getUid());
+			sc.chatServer.memberRepository.updateMember(member);
 			jsonResult.put("statusCode", "0");
 			jsonResult.put("message", "회원정보수정이 정상으로 처리되었습니다");
 		} catch (Exception e) {
@@ -129,10 +112,12 @@ public class MemberCommand{
 		sc.send(jsonResult.toString());
 
 		sc.close();
+		return true;
 
 	}
 
-	private void login(JSONObject jsonObject) {
+	public boolean login(SocketClient sc, JSONObject jsonObject) {
+		
 		String uid = jsonObject.getString("uid");
 		String pwd = jsonObject.getString("pwd");
 		JSONObject jsonResult = new JSONObject();
@@ -141,7 +126,7 @@ public class MemberCommand{
 		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
 		try {
-			Member member = chatServer.findByUid(uid);
+			Member member = sc.chatServer.findByUid(uid);
 			if (null != member && pwd.equals(member.getPwd())) {
 				jsonResult.put("statusCode", "0");
 				jsonResult.put("message", "로그인 성공");
@@ -154,9 +139,10 @@ public class MemberCommand{
 		sc.send(jsonResult.toString());
 
 		sc.close();
+		return true;
 	}
 
-	private void passwdSearch(JSONObject jsonObject) {
+	public boolean passwdSearch(SocketClient sc, JSONObject jsonObject) {
 		String uid = jsonObject.getString("uid");
 		JSONObject jsonResult = new JSONObject();
 
@@ -164,7 +150,7 @@ public class MemberCommand{
 		jsonResult.put("message", "로그인 아이디가 존재하지 않습니다");
 
 		try {
-			Member member = chatServer.findByUid(uid);
+			Member member = sc.chatServer.findByUid(uid);
 			if (null != member) {
 				jsonResult.put("statusCode", "0");
 				jsonResult.put("message", "비밀번호 찾기 성공");
@@ -177,5 +163,6 @@ public class MemberCommand{
 		sc.send(jsonResult.toString());
 
 		sc.close();
+		return true;
 	}
 }

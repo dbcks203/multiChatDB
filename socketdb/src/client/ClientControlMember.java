@@ -1,30 +1,28 @@
 package client;
 
 import java.util.Scanner;
+
 import org.json.JSONObject;
 
 import member.Member;
-
 
 public class ClientControlMember extends ChatClient {
 
 	private Scanner scanner = null;
 	Member member;
+
 	static interface LoginListener {
-		void afterLogin(); 
+		void afterLogin();
 	}
 
 	static interface ExitListener {
-		void afterExit(); 
+		void afterExit();
 	}
 
 	LoginListener loginListener = null;
-	ExitListener  exitListener = null;
+	ExitListener exitListener = null;
 
-	public ClientControlMember(Scanner scanner
-			,Member member
-			, LoginListener loginListener
-			, ExitListener exitListener) {
+	public ClientControlMember(Scanner scanner, Member member, LoginListener loginListener, ExitListener exitListener) {
 		this.scanner = scanner;
 		this.member = member;
 		this.loginListener = loginListener;
@@ -48,14 +46,11 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 
-
 			send(jsonObject.toString());
 
-			loginResponse(uid,pwd);
+			loginResponse(uid, pwd);
 
-			if (loginListener != null) {
-				loginListener.afterLogin();
-			}
+
 
 			disconnect();
 
@@ -71,10 +66,14 @@ public class ClientControlMember extends ChatClient {
 		String message = root.getString("message");
 
 		if (statusCode.equals("0")) {
-			System.out.println("로그인 성공");	
-			System.out.println(uid+"님이 로그인 하셨습니다.");
+			System.out.println("로그인 성공");
+			System.out.println(uid + "님이 로그인 하셨습니다.");
+			member = member.settingMember(uid, pwd, root.getString("name"));
 
-			member = member.settingMember(uid,pwd,root.getString("name"));
+			if (loginListener != null) {
+				loginListener.afterLogin();
+			}
+
 		} else {
 			System.out.println(message);
 		}
@@ -85,7 +84,9 @@ public class ClientControlMember extends ChatClient {
 		String uid;
 		String pwd;
 		String name;
-
+		String sex;
+		String address;
+		String phone;
 		try {
 			System.out.println("[2]회원가입");
 			System.out.print("아이디 : ");
@@ -94,6 +95,12 @@ public class ClientControlMember extends ChatClient {
 			pwd = scanner.nextLine();
 			System.out.print("이름 : ");
 			name = scanner.nextLine();
+			System.out.print("성별[M/F] : ");
+			sex = scanner.nextLine();
+			System.out.print("주소 : ");
+			address = scanner.nextLine();
+			System.out.print("핸드폰 : ");
+			phone = scanner.nextLine();
 			connect();
 
 			JSONObject jsonObject = new JSONObject();
@@ -101,12 +108,14 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 			jsonObject.put("name", name);
+			jsonObject.put("sex", sex);
+			jsonObject.put("address", address);
+			jsonObject.put("phone", phone);
 			String json = jsonObject.toString();
 
 			send(json);
 
 			registerMemberResonse();
-			System.out.println(name+"님 환영합니다.");
 
 			disconnect();
 
@@ -114,7 +123,6 @@ public class ClientControlMember extends ChatClient {
 			e.printStackTrace();
 		}
 	}
-
 
 	public void registerMemberResonse() throws Exception {
 		String json = dis.readUTF();
@@ -128,8 +136,6 @@ public class ClientControlMember extends ChatClient {
 			System.out.println(message);
 		}
 	}
-
-
 
 	public void passwdSearch() {
 		try {
@@ -174,16 +180,25 @@ public class ClientControlMember extends ChatClient {
 		String uid;
 		String pwd;
 		String name;
+		String sex;
+		String address;
+		String phone;
+
 		try {
 			System.out.println("[4]회원정보수정");
-			System.out.println("변경할 내용을 입력하세요.");
+			System.out.println("변경할 회원정보를 입력하세요.");
 			System.out.print("아이디 : ");
 			uid = scanner.nextLine();
 			System.out.print("비번 : ");
 			pwd = scanner.nextLine();
 			System.out.print("이름 : ");
 			name = scanner.nextLine();
-
+			System.out.print("성별[M/F] : ");
+			sex = scanner.nextLine();
+			System.out.print("주소 : ");
+			address = scanner.nextLine();
+			System.out.print("핸드폰 : ");
+			phone = scanner.nextLine();
 			connect();
 
 			JSONObject jsonObject = new JSONObject();
@@ -191,6 +206,9 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 			jsonObject.put("name", name);
+			jsonObject.put("sex", sex);
+			jsonObject.put("address", address);
+			jsonObject.put("phone", phone);
 			String json = jsonObject.toString();
 			send(json);
 
@@ -234,6 +252,9 @@ public class ClientControlMember extends ChatClient {
 			jsonObject.put("uid", uid);
 			jsonObject.put("pwd", pwd);
 			jsonObject.put("name", "");
+			jsonObject.put("sex", "");
+			jsonObject.put("address", "");
+			jsonObject.put("phone", "");
 			String json = jsonObject.toString();
 			send(json);
 
@@ -284,13 +305,13 @@ public class ClientControlMember extends ChatClient {
 		String statusCode = root.getString("statusCode");
 		String message = root.getString("message");
 
-
-		if (statusCode.equals("0")) {			
+		if (statusCode.equals("0")) {
 			System.out.println(message);
 		} else {
 			System.out.println(message);
 		}
 	}
+
 	public boolean memberExit() {
 		if (exitListener != null) {
 			exitListener.afterExit();

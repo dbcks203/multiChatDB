@@ -1,26 +1,33 @@
 package server;
-import java.io.FileWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.json.JSONObject;
+import chat.ChattingRepositoryDB;
 import member.Member;
 import member.MemberRepository;
-import member.MemberRepositoryDB;
+
 public class ChatServer {
 	// 필드
 	ServerSocket serverSocket;
 	ExecutorService threadPool = Executors.newFixedThreadPool(100);
-	MemberRepository memberRepository = new MemberRepositoryDB();
-
+	ChattingRepositoryDB chattingRepositoryDB = new ChattingRepositoryDB();
 	RoomManager roomManager = new RoomManager();
+	CommandManager commandManager = new CommandManager();
+	MemberRepository memberRepository;
 
 	// 메소드: 서버 시작
 	public void start() throws Exception {
+		Properties prop = new Properties();
+		prop.load(new FileInputStream(new File("db.properties")));
+		Class cls = Class.forName(prop.getProperty("MemberRepository"));
+		memberRepository = (MemberRepository) cls.newInstance();
 		memberRepository.loadMember();
 
 		serverSocket = new ServerSocket(50001);
@@ -40,34 +47,7 @@ public class ChatServer {
 		thread.start();
 	}
 
-	// 메시지 보내기
-	public void sendMessage(SocketClient sender, String message) throws Exception {
-		JSONObject root = new JSONObject();
-		root.put("chatName", sender.chatName);
-		// 출력 파일 생성
-		//String chatTitle = roomManager.loadRoom(sender.clientUid).title;
-		//FileWriter filewriter = new FileWriter("C:/Temp/" + chatTitle + ".db", true);
-		//filewriter.write(message);
-		//filewriter.flush();
-		//filewriter.write("\n");
-		//filewriter.close();
 
-		if (message.indexOf("@") == 0) {
-			int pos = message.indexOf(" ");
-			String key = message.substring(1, pos);
-			for (SocketClient c : sender.room.clients) {
-				if (key.equals(c.clientUid)) {
-					message = "(귀속말)  " + message.substring(pos + 1);
-					root.put("message", message);
-					String json = root.toString();
-					c.send(json);
-				}
-			}
-
-		} else {
-			sender.sendWithOutMe(message);
-		}
-	}
 
 	// 메소드: 서버 종료
 	public void stop() {
